@@ -13,6 +13,35 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from os import environ
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "default": {
+            "class": "logging.FileHandler",
+            "filename": "general.log",
+            "formatter": "verbose",
+            "level": "DEBUG",
+        },
+    },
+    "loggers": {
+        "default": {
+            "level": "DEBUG",
+            "handlers": ["default"],
+        },
+    },
+    "formatters": {
+        "verbose": {
+            "format": "{name} {levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
+}
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -32,7 +61,11 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    #Djano Apps
+    #Custom apps
+    'allauth',
+    'allauth.account',
+
+    #Django Apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -52,6 +85,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -72,6 +106,10 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+
+AUTHENTICATION_BACKENDS = {
+    'django.contrib.auth.backends.ModelBackend'
+}
 
 
 # Database
