@@ -12,7 +12,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from os import environ
+from django.urls import reverse_lazy
 
+
+LOGIN_REDIRECT_URL = reverse_lazy("index")
 
 ACCOUNT_EMAIL_VERIFICATION  = "none"
 
