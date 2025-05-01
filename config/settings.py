@@ -77,7 +77,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     #Project Apps
-    'apps.detection'
+    'apps.detection',
+    'apps.admin_control',
 ]
 
 MIDDLEWARE = [
