@@ -3,13 +3,22 @@
 {% block title %}Перелік моделей{% endblock title %}
 {% block content %}
     {% if model_list %}
-    <ul>
-    {% for model in model_list %}
-    <li>
-        {{model.name}}
-    </li>
-    {% endfor %}
-    </ul>
+    <table class="table">
+        <thead>
+            <th>Назва</th>
+            <th>Час створення</th>
+            <th>Дії</th>
+        </thead>
+        <tbody>
+            {% for model in model_list %}
+                <tr>
+                    <td>{{model.name}}</td>
+                    <td>{{model.created_at}}</td>
+                    <td><a href="{% url "model-info" model_id=model.model_id %}" class="btn btn-primary">Переглянути</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     {% else %}
     <p>Жодних моделей ще не створено</p>
     {% endif %}

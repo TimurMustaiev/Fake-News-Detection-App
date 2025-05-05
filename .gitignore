@@ -53,3 +53,5 @@ media/
 venv/
 
 detection_models/
+
+dataset/
