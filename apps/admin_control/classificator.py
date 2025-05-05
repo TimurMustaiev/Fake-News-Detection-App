@@ -3,14 +3,15 @@ import nltk
 import os
 import time
 import xgboost
+import re
 from google import genai
 from textblob import TextBlob
 from nltk.corpus import stopwords
 from sklearn.model_selection import train_test_split
 from django.conf import settings
+from .models import Model
 
-
-class ModelCreator:
+class ModelManager:
     @staticmethod
     def remove_stopwords(text):
         english_stopwords = set(stopwords.words('english'))
@@ -86,4 +87,31 @@ class ModelCreator:
           train_matrix, evals=[(train_matrix, "train"), (test_matrix, "validation")], 
           num_boost_round=100, early_stopping_rounds=20)
         model_xgb.save_model(settings.DETECTION_MODELS_PATH / f"{name}.json")
-                
+
+    def detect_fake(self, text: str, model: Model):
+        nltk.download('stopwords')
+        text = text.lower()
+        re_expression = r"[.,!?;:\"'“”‘’—–\-–…(){}\[\]«»<>%№@#&*/\\|^~=+]"
+        text = re.sub(re_expression, '', text)
+        text = self.remove_stopwords(text)
+
+        client = genai.Client(api_key=os.environ["API_KEY"])
+        response = client.models.embed_content(
+            model='text-embedding-004',
+            contents=text,
+            config=genai.types.EmbedContentConfig(task_type="CLASSIFICATION")
+        )
+        embeddings_features = response.embeddings[0].values
+        if model.featureinmodel_set.filter(feature__name="сентимент").exists():
+            embeddings_features.append(TextBlob(text).sentiment.polarity)
+        if model.featureinmodel_set.filter(feature__name="суб'єктивність").exists():
+            embeddings_features.append(TextBlob(text).sentiment.subjectivity)
+        
+        # matrix = xgboost.DMatrix([embeddings_features])
+        df_input = pd.DataFrame([embeddings_features])
+        matrix = xgboost.DMatrix(df_input)
+        model_xgb = xgboost.Booster()
+        model_xgb.load_model(settings.DETECTION_MODELS_PATH / f"{model.name}.json")
+        result = model_xgb.predict(matrix)
+
+        return result

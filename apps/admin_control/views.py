@@ -3,7 +3,7 @@ from django.views import View
 from django.views.generic import ListView
 from .models import Model, Feature, FeatureInModel, ParameterInModel, Parameter
 from .forms import ModelCreateForm, ModelFeaturesForm, ParameterInModelForm
-from .classificator import ModelCreator
+from .classificator import ModelManager
 
 
 class ModelListView(ListView):
@@ -70,7 +70,8 @@ class ModelCreateView(View):
                 params = {}
                 for parameter in parameters:
                     params.update({f"{parameter['name']}": parameter['value']})
-                model_trainer = ModelCreator()
+                params.update({'objective': 'binary:logistic'})
+                model_trainer = ModelManager()
                 news = model_trainer.prepare_data()
                 model_trainer.create_model(
                     model_name,

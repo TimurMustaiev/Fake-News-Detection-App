@@ -2,11 +2,12 @@
 {% load static %}
 {% load i18n %}
 {% load crispy_forms_tags %}
+{% block title %}Створення моделі{% endblock title %}
 {% block extra_head %}
     <link rel="stylesheet" href="{% static "css/model-create.css" %}">
 {% endblock extra_head %}
 {% block content %}
-    <h1>{% trans "Create Model" %}</h1>
+    <h1>Створити Модель Класифікації</h1>
     <form id="model-form" name="model-form" method="post">
         {% csrf_token %}
         {{ model_form|crispy }}
@@ -14,14 +15,14 @@
     <form id="feature-form" name="feature-form" method="post">
         {% csrf_token %}
         {{ feature_form|crispy }}
-        <button type="submit" id="addFeatureBtn" name="action" class="btn btn-primary" value="add_feature">{% trans "Add Feature" %}</button>
+        <button type="submit" id="addFeatureBtn" name="action" class="btn btn-primary" value="add_feature">Додати ознаку</button>
     </form>
     <form id="parameter-form" name="parameter-form" method="post">
         {% csrf_token %}
         {{ parameter_form|crispy }}
-        <button type="submit" name="action" class="btn btn-primary" value="add_parameter">{% trans "Add Parameter" %}</button>
+        <button type="submit" name="action" class="btn btn-primary" value="add_parameter">Додати параметр</button>
     </form>
-    <button type="submit" name="action" class="btn btn-primary" form="model-form" value="create_model">{% trans "Create Model" %}</button>
+    <button type="submit" name="action" class="btn btn-primary" form="model-form" value="create_model">Створити модель</button>
     <script>
         document.querySelector('#addFeatureBtn').addEventListener('click', function () {
             document.querySelector('#feature-form').submit();

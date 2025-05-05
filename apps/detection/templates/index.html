@@ -1,5 +1,20 @@
 {% extends "custom/base.html" %}
 {% load i18n %}
+{% load crispy_forms_tags %}
+{% block title %}Виявлення фейків{% endblock title %}
 {% block content %}
-    <h1>{% trans "Fake News detection" %}</h1>
+    <h1>Виявлення фейкових новин</h1>
+    {% if result %}
+        {% if result >= 0.7 %}
+            <p>Дана новина є фейком! Коефіцієнт фейку становить {{result}}</p>
+        {% else %}
+            <p>Дана новина є правдивою. Коефіцієнт фейку становить {{result}}</p>
+        {% endif %}
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            {{form|crispy}}
+            <button class="btn btn-success">Виявити фейк</button>
+        </form>
+    {% endif %}
 {% endblock content %}

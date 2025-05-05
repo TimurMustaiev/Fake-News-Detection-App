@@ -1,5 +1,6 @@
 {% extends "custom/base.html" %}
 {% load i18n %}
+{% block title %}Перелік моделей{% endblock title %}
 {% block content %}
     {% if model_list %}
     <ul>
@@ -10,7 +11,7 @@
     {% endfor %}
     </ul>
     {% else %}
-    <p>{% trans "There are no Models created at the moment" %}</p>
+    <p>Жодних моделей ще не створено</p>
     {% endif %}
-    <a class="btn btn-success" href="{% url "model-create" %}">{% trans "Create Model" %}</a>
+    <a class="btn btn-success" href="{% url "model-create" %}">Створити Модель</a>
 {% endblock content %}
