@@ -17,6 +17,8 @@ from django.urls import reverse_lazy
 
 LOGIN_REDIRECT_URL = reverse_lazy("index")
 
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
+
 ACCOUNT_EMAIL_VERIFICATION  = "none"
 
 LOGGING = {
@@ -70,6 +72,8 @@ INSTALLED_APPS = [
     #Custom apps
     'allauth',
     'allauth.account',
+    'crispy_forms',
+    'crispy_bootstrap5',
 
     #Django Apps
     'django.contrib.admin',
@@ -170,6 +174,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [ BASE_DIR / 'static' ]
+
+DATASET_PATH = BASE_DIR / 'dataset'
+DETECTION_MODELS_PATH = BASE_DIR / 'detection_models'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

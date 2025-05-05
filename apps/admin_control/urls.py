@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import ModelListView, ModelActionView
+from .views import ModelListView, ModelCreateView
 
 urlpatterns = [
     path('', ModelListView.as_view(), name="model-list"),
-    path('action/', ModelActionView.as_view(), name="model-action"),
+    path('create/', ModelCreateView.as_view(), name="model-create"),
 ]

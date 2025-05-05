@@ -12,6 +12,14 @@ class Feature(models.Model):
     name = models.CharField(max_length=50)
     description = models.CharField()
 
+    def __str__(self):
+        return f'{self.name} | Опис: {self.description}'
+    
+
 class Parameter(models.Model):
     parameter_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50)
+    description = models.CharField()
+
+    def __str__(self):
+        return f'{self.name} | Опис: {self.description}'

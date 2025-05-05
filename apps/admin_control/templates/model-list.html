@@ -1,5 +1,16 @@
 {% extends "custom/base.html" %}
 {% load i18n %}
 {% block content %}
-    <a class="btn btn-success" href="{% url "model-action" %}">{% trans "Create Model" %}</a>
+    {% if model_list %}
+    <ul>
+    {% for model in model_list %}
+    <li>
+        {{model.name}}
+    </li>
+    {% endfor %}
+    </ul>
+    {% else %}
+    <p>{% trans "There are no Models created at the moment" %}</p>
+    {% endif %}
+    <a class="btn btn-success" href="{% url "model-create" %}">{% trans "Create Model" %}</a>
 {% endblock content %}

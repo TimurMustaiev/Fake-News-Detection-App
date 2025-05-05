@@ -1,5 +1,33 @@
 {% extends "custom/base.html" %}
+{% load static %}
 {% load i18n %}
+{% load crispy_forms_tags %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static "css/model-create.css" %}">
+{% endblock extra_head %}
 {% block content %}
     <h1>{% trans "Create Model" %}</h1>
+    <form id="model-form" name="model-form" method="post">
+        {% csrf_token %}
+        {{ model_form|crispy }}
+    </form>
+    <form id="feature-form" name="feature-form" method="post">
+        {% csrf_token %}
+        {{ feature_form|crispy }}
+        <button type="submit" id="addFeatureBtn" name="action" class="btn btn-primary" value="add_feature">{% trans "Add Feature" %}</button>
+    </form>
+    <form id="parameter-form" name="parameter-form" method="post">
+        {% csrf_token %}
+        {{ parameter_form|crispy }}
+        <button type="submit" name="action" class="btn btn-primary" value="add_parameter">{% trans "Add Parameter" %}</button>
+    </form>
+    <button type="submit" name="action" class="btn btn-primary" form="model-form" value="create_model">{% trans "Create Model" %}</button>
+    <script>
+        document.querySelector('#addFeatureBtn').addEventListener('click', function () {
+            document.querySelector('#feature-form').submit();
+        });
+        document.querySelector('#addParamBtn').addEventListener('click', function () {
+            document.querySelector('#parameter-form').submit();
+        });
+    </script>
 {% endblock content %}

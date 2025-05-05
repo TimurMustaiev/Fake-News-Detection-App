@@ -51,3 +51,5 @@ media/
 
 # Virtual Environment
 venv/
+
+detection_models/
