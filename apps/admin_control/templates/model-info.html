@@ -27,6 +27,9 @@
     <p>
         Дії:
         <a href="" class="btn btn-primary">Редагувати</a>
-        <a href="" class="btn btn-danger">Видалити</a>
+        <a href="{% url 'model-delete' model.model_id %}" class="btn btn-danger" 
+            onclick="return confirm('Ви впевнені, що хочете видалити цю модель?');">
+            Видалити
+        </a>
     </p>
 {% endblock content %}

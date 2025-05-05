@@ -103,3 +103,9 @@ class ModelView(View):
         features = model.featureinmodel_set.all()
         parameters = model.parameterinmodel_set.all()
         return render(request, "model-info.html", {"model": model, "features_in_model": features, "parameters_in_model": parameters})
+    
+class ModelDeleteView(View):
+    def get(self, request, model_id):
+        model = Model.objects.get(pk=model_id)
+        model.delete()
+        return redirect("model-list")
