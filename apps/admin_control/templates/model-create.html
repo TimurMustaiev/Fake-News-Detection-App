@@ -7,27 +7,47 @@
     <link rel="stylesheet" href="{% static "css/model-create.css" %}">
 {% endblock extra_head %}
 {% block content %}
-    <h1>Створити Модель Класифікації</h1>
-    <form id="model-form" name="model-form" method="post">
+    <h1 class="mt-2 mb-3">Створити Модель Класифікації</h1>
+    <form id="model-form" name="model-form" class="w-25 mx-auto" method="post">
         {% csrf_token %}
         {{ model_form|crispy }}
     </form>
-    <form id="feature-form" name="feature-form" method="post">
-        {% csrf_token %}
+    <form id="feature-form" name="feature-form" class="w-25 mx-auto" method="get">
         {{ feature_form|crispy }}
+        <input type="hidden" name="name" id="model-name-hidden-f">
+        {% if features %}
+        <p class="mb-1">Додані ознаки:</p>
+        <ul class="list-group mx-auto mb-2" style="width: 30%;">
+            {% for feature in features %}
+            <li class="list-group-item">{{feature.name}}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
         <button type="submit" id="addFeatureBtn" name="action" class="btn btn-primary" value="add_feature">Додати ознаку</button>
     </form>
-    <form id="parameter-form" name="parameter-form" method="post">
-        {% csrf_token %}
+    <form id="parameter-form" name="parameter-form" class="w-25 mx-auto mt-2" method="get">
         {{ parameter_form|crispy }}
-        <button type="submit" name="action" class="btn btn-primary" value="add_parameter">Додати параметр</button>
+        <input type="hidden" name="name" id="model-name-hidden-p">
+        {% if parameters %}
+        <p class="mb-1">Додані параметри:</p>
+        <ul class="list-group mx-auto mb-2" style="width: 30%;">
+            {% for parameter in parameters %}
+            <li class="list-group-item">{{parameter.name}}={{parameter.value}}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <button type="submit" id="addParameterBtn" name="action" class="btn btn-primary mb-2" value="add_parameter">Додати параметр</button>
     </form>
-    <button type="submit" name="action" class="btn btn-primary" form="model-form" value="create_model">Створити модель</button>
+    <button type="submit" class="btn btn-success mt-5 mb-3" form="model-form">Створити Модель</button>
     <script>
         document.querySelector('#addFeatureBtn').addEventListener('click', function () {
+            const modelName = document.querySelector('#id_name').value;
+            document.getElementById('model-name-hidden-f').value = modelName;
             document.querySelector('#feature-form').submit();
         });
-        document.querySelector('#addParamBtn').addEventListener('click', function () {
+        document.querySelector('#addParameterBtn').addEventListener('click', function () {
+            const modelName = document.querySelector('#id_name').value;
+            document.getElementById('model-name-hidden-p').value = modelName;
             document.querySelector('#parameter-form').submit();
         });
     </script>
