@@ -1,0 +1,13 @@
+{% extends "custom/base.html" %}
+{% load static %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% block title %}Редагування параметру моделі{% endblock title %}
+{% block content %}
+    <h1 class="mt-2 mb-3">Оберіть новий параметр</h1>
+    <form id="update-form" name="update-form" class="w-25 mx-auto" method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary">Оновити параметр</button>
+    </form>
+{% endblock content %}

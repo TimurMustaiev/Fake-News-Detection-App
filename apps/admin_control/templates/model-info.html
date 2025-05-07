@@ -2,34 +2,60 @@
 {% load i18n %}
 {% block title %}Сторінка моделі{% endblock title %}
 {% block content %}
-    <p>{{model.name}}</p>
-    <p>{{model.created_at}}</p>
-    <p>
-        Ознаки:
-        <p>
-            <ul>
-                {% for feature_in_model in features_in_model %}
-                    <li>{{feature_in_model.feature.name}} - {{feature_in_model.feature.description}}</li>
-                {% endfor %}
-            </ul>
-        </p>
-    </p>
-    <p>
-        Параметри:
-        <p>
-            <ul>
-                {% for parameter_in_model in parameters_in_model %}
-                    <li>{{parameter_in_model.parameter.name}} = {{parameter.value}} - {{parameter_in_model.parameter.description}}</li>
-                {% endfor %}
-            </ul>
-        </p>
-    </p>
-    <p>
-        Дії:
-        <a href="" class="btn btn-primary">Редагувати</a>
-        <a href="{% url 'model-delete' model.model_id %}" class="btn btn-danger" 
+    <h1 class="mt-2 mb-0">{{model.name}}</h1>
+    <a href="{% url 'model-delete' model.model_id %}" class="btn btn-danger mb-2" 
             onclick="return confirm('Ви впевнені, що хочете видалити цю модель?');">
             Видалити
-        </a>
-    </p>
+    </a>
+    <p>{{model.created_at}}</p>
+    <h3>Ознаки:</h3>
+    <table class="table table-bordered w-50 mx-auto">
+        <thead>
+            <th>Назва</th>
+            <th>Опис</th>
+            <th>Дії</th>
+        </thead>
+        <tbody>
+            {% for feature_in_model in features_in_model %}
+                <tr>
+                    <td>{{feature_in_model.feature.name}}</td>
+                    <td>{{feature_in_model.feature.description}}</td>
+                    <td>
+                        <a href="{% url "feature-update" model.model_id feature_in_model.feature_id %}" class="btn btn-primary">
+                            Редагувати
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h3>Параметри:</h3>
+    <table class="table table-bordered w-50 mx-auto">
+        <thead>
+            <th>Назва</th>
+            <th>Значення</th>
+            <th>Опис</th>
+            <th>Дії</th>
+        </thead>
+        <tbody>
+            {% for parameter_in_model in parameters_in_model %}
+                <tr>
+                    <td>{{parameter_in_model.parameter.name}}</td>
+                    <td>{{parameter_in_model.value}}</td>
+                    <td>{{parameter_in_model.parameter.description}}</td>
+                    <td>
+                        <a href="{% url "parameter-update" model.model_id parameter_in_model.parameter_id %}" class="btn btn-primary">
+                            Редагувати
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if edit_start %}
+    <form action="{% url "model-update" model_id=model.model_id %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success">Оновити модель</button>
+    </form>
+    {% endif %}
 {% endblock content %}

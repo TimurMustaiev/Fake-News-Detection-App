@@ -1,3 +1,4 @@
+import os
 from django.shortcuts import render, redirect
 from django.views import View
 from django.views.generic import ListView
@@ -5,6 +6,7 @@ from .models import Model, Feature, FeatureInModel, ParameterInModel, Parameter
 from .forms import ModelCreateForm, ModelFeaturesForm, ParameterInModelForm
 from .classificator import ModelManager
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.conf import settings
 
 
 class ModelListView(LoginRequiredMixin, ListView):
@@ -113,7 +115,14 @@ class ModelView(LoginRequiredMixin, View):
         model = Model.objects.get(pk=model_id)
         features = model.featureinmodel_set.all()
         parameters = model.parameterinmodel_set.all()
-        return render(request, "model-info.html", {"model": model, "features_in_model": features, "parameters_in_model": parameters})
+        page_vars = {
+            "model": model, 
+            "features_in_model": features, 
+            "parameters_in_model": parameters
+        }
+        if "edit_start" in request.session:
+            page_vars.update({"edit_start": True})
+        return render(request, "model-info.html", page_vars)
 
 
 class ModelDeleteView(LoginRequiredMixin, View):
@@ -121,3 +130,71 @@ class ModelDeleteView(LoginRequiredMixin, View):
         model = Model.objects.get(pk=model_id)
         model.delete()
         return redirect("model-list")
+    
+
+class FeatureUpdateView(LoginRequiredMixin, View):
+    def get(self, request, model_id, feature_id):
+        model = Model.objects.get(pk=model_id)
+        form = ModelFeaturesForm()
+        return render(request, "feature-upd.html", {"form": form})
+    
+    def post(self, request, model_id, feature_id):
+        form = ModelFeaturesForm(request.POST)
+        if form.is_valid():
+            model = Model.objects.get(pk=model_id)
+            feature_in_model = model.featureinmodel_set.get(feature_id=feature_id)
+            new_feature = form.cleaned_data.get("feature")
+            feature_in_model_obj = FeatureInModel.objects.get(feature=feature_in_model.feature, model=model)
+            feature_in_model_obj.feature = new_feature
+            feature_in_model_obj.save()
+            request.session["edit_start"] = True
+        return redirect("model-info", model_id)
+
+
+class ParameterUpdateView(LoginRequiredMixin, View):
+    def get(self, request, model_id, parameter_id):
+        model = Model.objects.get(pk=model_id)
+        form = ParameterInModelForm()
+        return render(request, "parameter-upd.html", {"form": form})
+    
+    def post(self, request, model_id, parameter_id):
+        form = ParameterInModelForm(request.POST)
+        if form.is_valid():
+            model = Model.objects.get(pk=model_id)
+            new_parameter = form.cleaned_data.get("parameter")
+            value = form.cleaned_data.get("value")
+            parameter_in_model = model.parameterinmodel_set.get(parameter_id=parameter_id)
+            parameter_in_model_obj = ParameterInModel.objects.get(parameter=parameter_in_model.parameter, model=model)
+            parameter_in_model_obj.parameter = new_parameter
+            parameter_in_model_obj.value = value
+            parameter_in_model_obj.save()
+            request.session["edit_start"] = True
+        return redirect("model-info", model_id)
+
+
+class ModelUpdateView(LoginRequiredMixin, View):
+    def post(self, request, model_id):
+        model = Model.objects.get(pk=model_id)
+        file_path = os.path.join(settings.DETECTION_MODELS_PATH, model.location)
+        os.remove(file_path)
+
+        features_in_model = model.featureinmodel_set.all()
+        features_names = []
+        for feature_in_model in features_in_model:
+            features_names.append(feature_in_model.feature.name)
+        parameters_in_model = model.parameterinmodel_set.all()
+        params = {}
+        for parameter_in_model in parameters_in_model:
+            params.update({f"{parameter_in_model.parameter.name}": parameter_in_model.value})
+            params.update({'objective': 'binary:logistic'})
+            model_trainer = ModelManager()
+            news = model_trainer.prepare_data()
+            model_trainer.create_model(
+                model.name,
+                news,
+                features_names,
+                params
+            )
+        del request.session["edit_start"]
+        return redirect("model-info", model_id)
+        

@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'crispy_forms',
     'crispy_bootstrap5',
+    'widget_tweaks',
 
     #Django Apps
     'django.contrib.admin',
