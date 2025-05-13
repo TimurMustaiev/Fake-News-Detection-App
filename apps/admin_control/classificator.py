@@ -32,15 +32,15 @@ class ModelManager:
         return news
 
     @staticmethod
-    def calc_embeddings_features(news, features):
+    async def calc_embeddings_features(news, features):
         client = genai.Client(api_key=os.environ["API_KEY"])
         embeddings_features = []
-        for i, text in enumerate(news["text"].iloc[:30]):
+        for i, text in enumerate(news["text"].iloc[:5000]):
             success = False
             retry_delay = 60
             while not success:
                 try:
-                    response = client.models.embed_content(
+                    response = await client.aio.models.embed_content(
                         model='text-embedding-004',
                         contents=text,
                         config=genai.types.EmbedContentConfig(task_type="CLASSIFICATION")
@@ -54,7 +54,7 @@ class ModelManager:
                     embeddings_features.append(values)
                     success = True
 
-                    time.sleep(1.0)
+                    # time.sleep(0.3)
 
                 except Exception as e:
                     error_message = str(e).lower()
@@ -73,10 +73,10 @@ class ModelManager:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
         return X_train, X_test, y_train, y_test
     
-    def create_model(self, name, news, features, params):
-        embeddings_features, labels = self.calc_embeddings_features(news, features)
-        X = pd.DataFrame(embeddings_features[:30])
-        y = labels.iloc[:30].reset_index(drop=True)
+    async def create_model(self, name, news, features, params):
+        embeddings_features, labels = await self.calc_embeddings_features(news, features)
+        X = pd.DataFrame(embeddings_features[:5000])
+        y = labels.iloc[:5000].reset_index(drop=True)
 
         X_train, X_test, y_train, y_test = self.create_train_sets(X, y, 0.25)
 

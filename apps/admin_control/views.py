@@ -1,3 +1,4 @@
+import asyncio
 import os
 from django.shortcuts import render, redirect
 from django.views import View
@@ -85,12 +86,12 @@ class ModelCreateView(LoginRequiredMixin, View):
                 params.update({'objective': 'binary:logistic'})
                 model_trainer = ModelManager()
                 news = model_trainer.prepare_data()
-                model_trainer.create_model(
+                asyncio.run(model_trainer.create_model(
                     model_name,
                     news,
                     features_names,
                     params
-                )
+                ))
                 
                 model = Model(name=model_name, location=f"{model_name}.json")
                 model.save()
