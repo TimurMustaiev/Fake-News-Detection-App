@@ -32,3 +32,10 @@ class Parameter(models.Model):
 
     def __str__(self):
         return f'{self.name} | Опис: {self.description}'
+
+
+# class TestModel(models.Model):
+#     test_model_id = models.AutoField(primary_key=True)
+#     model = models.ForeignKey(to="Model", on_delete=models.CASCADE)
+#     accuracy = models.FloatField(blank=False, null=False)
+#     precision = models.FloatField(blank=False, null=False)

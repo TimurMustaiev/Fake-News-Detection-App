@@ -15,7 +15,10 @@
                 <tr>
                     <td>{{model.name}}</td>
                     <td>{{model.created_at}}</td>
-                    <td><a href="{% url "model-info" model_id=model.model_id %}" class="btn btn-primary">Переглянути</a></td>
+                    <td>
+                        <a href="{% url "model-info" model_id=model.model_id %}" class="btn btn-primary">Переглянути</a>
+                        <a href="{% url "model-performance" model_id=model.model_id %}?generate=true" class="btn btn-secondary">Статистика</a>
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>

@@ -17,7 +17,7 @@
         <input type="hidden" name="name" id="model-name-hidden-f">
         {% if features %}
         <p class="mb-1">Додані ознаки:</p>
-        <ul class="list-group mx-auto mb-2" style="width: 30%;">
+        <ul class="list-group mx-auto mb-2" style="width: 40%;">
             {% for feature in features %}
             <li class="list-group-item">{{feature.name}}</li>
             {% endfor %}
@@ -30,7 +30,7 @@
         <input type="hidden" name="name" id="model-name-hidden-p">
         {% if parameters %}
         <p class="mb-1">Додані параметри:</p>
-        <ul class="list-group mx-auto mb-2" style="width: 30%;">
+        <ul class="list-group mx-auto mb-2" style="width: 40%;">
             {% for parameter in parameters %}
             <li class="list-group-item">{{parameter.name}}={{parameter.value}}</li>
             {% endfor %}

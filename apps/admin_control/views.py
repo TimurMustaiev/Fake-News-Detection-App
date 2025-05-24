@@ -1,5 +1,6 @@
 import asyncio
 import os
+import pandas as pd
 from django.shortcuts import render, redirect
 from django.views import View
 from django.views.generic import ListView
@@ -198,4 +199,40 @@ class ModelUpdateView(LoginRequiredMixin, View):
             )
         del request.session["edit_start"]
         return redirect("model-info", model_id)
-        
+
+
+#при переході сюди тригерити вікно з повідомленням почекати
+#закруглити результати
+class ModelStatsView(LoginRequiredMixin, View):
+    def get(self, request, model_id):
+        generate = request.GET.get("generate")
+        if generate:
+            if request.session.get("scores") and request.session.get("plots"):
+                del request.session["scores"]
+                del request.session["plots"]
+            df = pd.read_csv(settings.DATASET_PATH / "news.csv")
+            df["text"] = df["text"].fillna('').astype(str)
+            news = df[["text", "label"]]
+            model_manager = ModelManager()
+            scores, plots = model_manager.prepare_performance_data(news[:25], model_id)
+            request.session['scores'] = scores
+            request.session['plots'] = plots
+            return render(request, "model-performance.html", {
+                "accuracy_score": scores["accuracy"],
+                "precision_score": scores["precision"],
+                "log_loss_score": scores["log_loss"],
+                "precision_recall_curve": plots["precision_recall"],
+                "roc_auc_curve": plots["roc_auc"],
+                "t_sne_plot": plots["t_sne"]
+            })
+        else:
+            scores = request.session["scores"]
+            plots = request.session["plots"]
+            return render(request, "model-performance.html", {
+                "accuracy_score": scores["accuracy"],
+                "precision_score": scores["precision"],
+                "log_loss_score": scores["log_loss"],
+                "precision_recall_curve": plots["precision_recall"],
+                "roc_auc_curve": plots["roc_auc"],
+                "t_sne_plot": plots["t_sne"]
+            })

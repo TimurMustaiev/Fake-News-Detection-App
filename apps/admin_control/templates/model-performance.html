@@ -1,0 +1,26 @@
+{% extends "custom/base.html" %}
+{% load i18n %}
+{% block title %}Інформація про роботу моделі{% endblock title %}
+{% block content %}
+    <h1 class="mt-2">Метрики</h1>
+    <table class="table table-bordered w-50 mx-auto">
+        <thead>
+            <th>Accuracy</th>
+            <th>Precision</th>
+            <th>Log Loss</th>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{accuracy_score}}</td>
+                <td>{{precision_score}}</td>
+                <td>{{log_loss_score}}</td>
+            </tr>
+        </tbody>
+    </table>
+    <h1>Візуалізація</h1>
+    <div class="d-flex flex-row justify-content-evenly flex-wrap" style="gap: 1.5rem;">
+        <img class="img-fluid" style="max-height: 60vh; max-width: 45%;" src="data:image/png;base64,{{ precision_recall_curve }}">
+        <img class="img-fluid" style="max-height: 60vh; max-width: 45%;" src="data:image/png;base64,{{ roc_auc_curve }}">
+        <img class="img-fluid" style="max-height: 60vh; max-width: 45%;" src="data:image/png;base64,{{ t_sne_plot }}">
+    </div>
+{% endblock content %}

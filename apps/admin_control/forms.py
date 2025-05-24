@@ -11,3 +11,6 @@ class ModelFeaturesForm(forms.Form):
 class ParameterInModelForm(forms.Form):
     parameter = forms.ModelChoiceField(queryset=Parameter.objects.all(), label='Параметр')
     value = forms.FloatField()
+
+# class NewsSetForm(forms.Form):
+#     file = forms.FileField(widget=forms.FileInput(attrs={'accept': '.csv'}))
