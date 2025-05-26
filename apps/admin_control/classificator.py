@@ -15,6 +15,7 @@ from nltk.corpus import stopwords
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_recall_curve, roc_curve, auc, accuracy_score, precision_score, log_loss
 from sklearn.manifold import TSNE
+from sklearn.neighbors import KNeighborsClassifier
 from typing import List
 from django.conf import settings
 from .models import Model
@@ -41,29 +42,31 @@ class ModelManager:
         return news
 
     @staticmethod
-    async def calc_embeddings_features(news, features):
+    async def calc_embeddings_features(news: pd.DataFrame, features):
         client = genai.Client(api_key=os.environ["API_KEY"])
         embeddings_features = []
-        for i, text in enumerate(news["text"].iloc[:30]):
+        subarray_size = 100
+        for i in range(0, (news.shape[0] - subarray_size + 1), subarray_size):
             success = False
             retry_delay = 60
+            sub_texts = news['text'].iloc[i:i + subarray_size].tolist()
             while not success:
                 try:
                     response = await client.aio.models.embed_content(
                         model='text-embedding-004',
-                        contents=text,
+                        contents=sub_texts,
                         config=genai.types.EmbedContentConfig(task_type="CLASSIFICATION")
                     )
+                    for idx, vector in enumerate(response.embeddings):
+                        values = vector.values
+                        text = sub_texts[idx]
+                        if "сентимент" in features:
+                            values.append(TextBlob(text).sentiment.polarity)
+                        if "суб'єктивність" in features:
+                            values.append(TextBlob(text).sentiment.subjectivity)
+                        embeddings_features.append(values)
                     print(i)
-                    values = response.embeddings[0].values
-                    if "сентимент" in features:
-                        values.append(TextBlob(text).sentiment.polarity)
-                    if "суб'єктивність" in features:
-                        values.append(TextBlob(text).sentiment.subjectivity)
-                    embeddings_features.append(values)
                     success = True
-
-                    # time.sleep(0.3)
 
                 except Exception as e:
                     error_message = str(e).lower()
@@ -74,7 +77,6 @@ class ModelManager:
                         print(f"Non-quota error at index {i}: {e}")
                         embeddings_features.append(None)
                         success = True
-
         return embeddings_features, news["label"]
 
     @staticmethod
@@ -84,17 +86,24 @@ class ModelManager:
     
     async def create_model(self, name, news, features, params):
         embeddings_features, labels = await self.calc_embeddings_features(news, features)
-        X = pd.DataFrame(embeddings_features[:30])
-        y = labels.iloc[:30].reset_index(drop=True)
+        X = pd.DataFrame(embeddings_features)
+        y = labels.reset_index(drop=True)
 
         X_train, X_test, y_train, y_test = self.create_train_sets(X, y, 0.25)
 
         train_matrix = xgboost.DMatrix(X_train, y_train)
         test_matrix = xgboost.DMatrix(X_test, y_test)
 
-        model_xgb = xgboost.train(params, 
-          train_matrix, evals=[(train_matrix, "train"), (test_matrix, "validation")], 
-          num_boost_round=100, early_stopping_rounds=20)
+        if "n_estimators" in params:
+            n_estimators = params["n_estimators"]
+            del params["n_estimators"]
+            model_xgb = xgboost.train(params, 
+            train_matrix, evals=[(train_matrix, "train"), (test_matrix, "validation")], 
+            num_boost_round=n_estimators, early_stopping_rounds=20)
+        else:
+            model_xgb = xgboost.train(params, 
+            train_matrix, evals=[(train_matrix, "train"), (test_matrix, "validation")], 
+            num_boost_round=100, early_stopping_rounds=20)
         model_xgb.save_model(settings.DETECTION_MODELS_PATH / f"{name}.json")
 
     def detect_fake(self, text: str, model: Model):
@@ -136,16 +145,22 @@ class ModelManager:
         model_xgb.load_model(settings.DETECTION_MODELS_PATH / f"{model.name}.json")
         
         embeddings_features, y_true = asyncio.run(self.calc_embeddings_features(news, features_names))
-        y_pred = []
+        y_pred_xgb = []
         for vector in embeddings_features:
             df = pd.DataFrame([vector])
             matrix = xgboost.DMatrix(df)
-            y_pred.append(model_xgb.predict(matrix))
-        y_pred_binary = [1 if p >= 0.5 else 0 for p in y_pred] #поміняти 0.5 на більше?
+            y_pred_xgb.append(model_xgb.predict(matrix))
+        y_pred_xgb_binary = [1 if p >= 0.5 else 0 for p in y_pred_xgb]
 
-        precision, recall, thresholds = precision_recall_curve(y_true, y_pred)
+        knn = KNeighborsClassifier()
+        knn.fit(embeddings_features, y_true)
+        y_pred_knn = knn.predict_proba(embeddings_features)[:, 1]
+
+        precision, recall, thresholds = precision_recall_curve(y_true, y_pred_xgb)
+        precision_knn, recall_knn, thresholds_knn = precision_recall_curve(y_true, y_pred_knn)
         plt.figure(figsize=(8, 6))
-        plt.plot(recall, precision, label=f'Запропонований метод (AUC = {auc(recall, precision):.2f})')
+        plt.plot(recall, precision, label=f'Запропонований метод (AUC = {auc(recall, precision):.2f})', color='green')
+        plt.plot(recall_knn, precision_knn, label=f'KNN (AUC = {auc(recall_knn, precision_knn):.2f})', color='blue')
         plt.xlabel('Recall')
         plt.ylabel('Precision')
         plt.title('Precision-Recall')
@@ -159,9 +174,11 @@ class ModelManager:
         precision_recall = base64.b64encode(image_png)
         precision_recall = precision_recall.decode('utf-8')
 
-        fpr, tpr, _ = roc_curve(y_true, y_pred)
+        fpr, tpr, _ = roc_curve(y_true, y_pred_xgb)
+        fpr_knn, tpr_knn, _ = roc_curve(y_true, y_pred_knn)
         plt.figure(figsize=(8, 6))
-        plt.plot(fpr, tpr, label=f'Запропонований метод (AUC = {auc(fpr, tpr):.2f})')
+        plt.plot(fpr, tpr, label=f'Запропонований метод (AUC = {auc(fpr, tpr):.2f})', color='green')
+        plt.plot(fpr_knn, tpr_knn, label=f'KNN (AUC = {auc(fpr_knn, tpr_knn):.2f})', color='blue')
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
         plt.title('ROC Curve')
@@ -175,7 +192,7 @@ class ModelManager:
         roc_auc = base64.b64encode(image_png)
         roc_auc = roc_auc.decode('utf-8')
 
-        tsne = TSNE(n_components=2, perplexity=5) #прибрати perplexity при великому наборі
+        tsne = TSNE(n_components=2) #прибрати perplexity при великому наборі
         embeddings_features_reduced = tsne.fit_transform(np.array(embeddings_features))
         colors = ['blue', 'orange']
         labels = ['Правда', 'Фейк']
@@ -203,9 +220,9 @@ class ModelManager:
         t_sne_plot = base64.b64encode(image_png)
         t_sne_plot = t_sne_plot.decode('utf-8')
 
-        accuracy = round(accuracy_score(y_true, y_pred_binary),2)
-        precision = round(precision_score(y_true, y_pred_binary),2)
-        loss = round(log_loss(y_true, y_pred_binary),2)
+        accuracy = round(accuracy_score(y_true, y_pred_xgb_binary),2)
+        precision = round(precision_score(y_true, y_pred_xgb_binary),2)
+        loss = round(log_loss(y_true, y_pred_xgb_binary),2)
 
         scores = {
             "accuracy": accuracy,

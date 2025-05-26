@@ -89,7 +89,7 @@ class ModelCreateView(LoginRequiredMixin, View):
                 news = model_trainer.prepare_data()
                 asyncio.run(model_trainer.create_model(
                     model_name,
-                    news,
+                    news.iloc[:1_500],
                     features_names,
                     params
                 ))
@@ -201,8 +201,6 @@ class ModelUpdateView(LoginRequiredMixin, View):
         return redirect("model-info", model_id)
 
 
-#при переході сюди тригерити вікно з повідомленням почекати
-#закруглити результати
 class ModelStatsView(LoginRequiredMixin, View):
     def get(self, request, model_id):
         generate = request.GET.get("generate")
@@ -214,7 +212,7 @@ class ModelStatsView(LoginRequiredMixin, View):
             df["text"] = df["text"].fillna('').astype(str)
             news = df[["text", "label"]]
             model_manager = ModelManager()
-            scores, plots = model_manager.prepare_performance_data(news[:25], model_id)
+            scores, plots = model_manager.prepare_performance_data(news[:1000], model_id)
             request.session['scores'] = scores
             request.session['plots'] = plots
             return render(request, "model-performance.html", {

@@ -29,6 +29,7 @@ class Parameter(models.Model):
     parameter_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50)
     description = models.CharField()
+    param_type = models.CharField(max_length=10, choices=[('int', 'Integer'), ('float', 'Float')])
 
     def __str__(self):
         return f'{self.name} | Опис: {self.description}'

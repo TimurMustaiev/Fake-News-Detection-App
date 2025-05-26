@@ -17,7 +17,9 @@
                     <td>{{model.created_at}}</td>
                     <td>
                         <a href="{% url "model-info" model_id=model.model_id %}" class="btn btn-primary">Переглянути</a>
-                        <a href="{% url "model-performance" model_id=model.model_id %}?generate=true" class="btn btn-secondary">Статистика</a>
+                        <a href="{% url "model-performance" model_id=model.model_id %}?generate=true"
+                        onclick="alert('Закрийте повідомлення та зачекайте: відбувається формування даних...');"
+                        class="btn btn-secondary">Дослідити роботу</a>
                     </td>
                 </tr>
             {% endfor %}
