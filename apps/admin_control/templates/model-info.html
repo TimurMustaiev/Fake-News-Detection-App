@@ -10,27 +10,31 @@
         </a>
     </h1>
     <p>{{model.created_at}}</p>
-    <h3>Ознаки:</h3>
-    <table class="table table-bordered table-light w-50 mx-auto">
-        <thead>
-            <th>Назва</th>
-            <th>Опис</th>
-            <th>Дії</th>
-        </thead>
-        <tbody>
-            {% for feature_in_model in features_in_model %}
-                <tr>
-                    <td>{{feature_in_model.feature.name}}</td>
-                    <td>{{feature_in_model.feature.description}}</td>
-                    <td>
-                        <a href="{% url "feature-update" model.model_id feature_in_model.feature_id %}" class="btn btn-primary">
-                            <i class="fas fa-pencil-alt"></i>
-                        </a>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    {% if features_in_model %}
+        <h3>Ознаки:</h3>
+        <table class="table table-bordered table-light w-50 mx-auto">
+            <thead>
+                <th>Назва</th>
+                <th>Опис</th>
+                <th>Дії</th>
+            </thead>
+            <tbody>
+                {% for feature_in_model in features_in_model %}
+                    <tr>
+                        <td>{{feature_in_model.feature.name}}</td>
+                        <td>{{feature_in_model.feature.description}}</td>
+                        <td>
+                            <a href="{% url "feature-update" model.model_id feature_in_model.feature_id %}" class="btn btn-primary">
+                                <i class="fas fa-pencil-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <h3 class="mb-3">Ознаки: Відсутні</h3>
+    {% endif %}
     <h3>Параметри:</h3>
     <table class="table table-bordered table-light w-50 mx-auto">
         <thead>
