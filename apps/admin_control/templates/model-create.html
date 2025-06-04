@@ -38,7 +38,10 @@
         {% endif %}
         <button type="submit" id="addParameterBtn" name="action" class="btn btn-primary mb-2" value="add_parameter">Додати параметр</button>
     </form>
-    <button type="submit" class="btn btn-success mt-5 mb-3" form="model-form">Створити Модель</button>
+    <button type="submit" class="btn btn-success mt-5 mb-3" form="model-form"
+    onclick="alert('Закрийте повідомлення та зачекайте до завершення створення моделі.');">
+        Створити Модель
+    </button>
     <script>
         document.querySelector('#addFeatureBtn').addEventListener('click', function () {
             const modelName = document.querySelector('#id_name').value;

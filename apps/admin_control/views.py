@@ -130,7 +130,10 @@ class ModelView(LoginRequiredMixin, View):
 class ModelDeleteView(LoginRequiredMixin, View):
     def get(self, request, model_id):
         model = Model.objects.get(pk=model_id)
+        path = settings.DETECTION_MODELS_PATH / f"{model.name}.json"
         model.delete()
+        if os.path.isfile(path):
+            os.remove(path)
         return redirect("model-list")
     
 
@@ -218,6 +221,8 @@ class ModelStatsView(LoginRequiredMixin, View):
             return render(request, "model-performance.html", {
                 "accuracy_score": scores["accuracy"],
                 "precision_score": scores["precision"],
+                "recall_score": scores["recall"],
+                "f1_score": scores["f1"],
                 "log_loss_score": scores["log_loss"],
                 "precision_recall_curve": plots["precision_recall"],
                 "roc_auc_curve": plots["roc_auc"],

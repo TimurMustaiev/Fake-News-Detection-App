@@ -13,7 +13,7 @@ from google import genai
 from textblob import TextBlob
 from nltk.corpus import stopwords
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import precision_recall_curve, roc_curve, auc, accuracy_score, precision_score, log_loss
+from sklearn.metrics import precision_recall_curve, roc_curve, auc, accuracy_score, precision_score, log_loss, recall_score, f1_score
 from sklearn.manifold import TSNE
 from sklearn.neighbors import KNeighborsClassifier
 from typing import List
@@ -125,7 +125,6 @@ class ModelManager:
         if model.featureinmodel_set.filter(feature__name="суб'єктивність").exists():
             embeddings_features.append(TextBlob(text).sentiment.subjectivity)
         
-        # matrix = xgboost.DMatrix([embeddings_features])
         df_input = pd.DataFrame([embeddings_features])
         matrix = xgboost.DMatrix(df_input)
         model_xgb = xgboost.Booster()
@@ -152,15 +151,9 @@ class ModelManager:
             y_pred_xgb.append(model_xgb.predict(matrix))
         y_pred_xgb_binary = [1 if p >= 0.5 else 0 for p in y_pred_xgb]
 
-        knn = KNeighborsClassifier()
-        knn.fit(embeddings_features, y_true)
-        y_pred_knn = knn.predict_proba(embeddings_features)[:, 1]
-
         precision, recall, thresholds = precision_recall_curve(y_true, y_pred_xgb)
-        precision_knn, recall_knn, thresholds_knn = precision_recall_curve(y_true, y_pred_knn)
         plt.figure(figsize=(8, 6))
         plt.plot(recall, precision, label=f'Запропонований метод (AUC = {auc(recall, precision):.2f})', color='green')
-        plt.plot(recall_knn, precision_knn, label=f'KNN (AUC = {auc(recall_knn, precision_knn):.2f})', color='blue')
         plt.xlabel('Recall')
         plt.ylabel('Precision')
         plt.title('Precision-Recall')
@@ -175,10 +168,8 @@ class ModelManager:
         precision_recall = precision_recall.decode('utf-8')
 
         fpr, tpr, _ = roc_curve(y_true, y_pred_xgb)
-        fpr_knn, tpr_knn, _ = roc_curve(y_true, y_pred_knn)
         plt.figure(figsize=(8, 6))
         plt.plot(fpr, tpr, label=f'Запропонований метод (AUC = {auc(fpr, tpr):.2f})', color='green')
-        plt.plot(fpr_knn, tpr_knn, label=f'KNN (AUC = {auc(fpr_knn, tpr_knn):.2f})', color='blue')
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
         plt.title('ROC Curve')
@@ -192,7 +183,7 @@ class ModelManager:
         roc_auc = base64.b64encode(image_png)
         roc_auc = roc_auc.decode('utf-8')
 
-        tsne = TSNE(n_components=2) #прибрати perplexity при великому наборі
+        tsne = TSNE(n_components=2)
         embeddings_features_reduced = tsne.fit_transform(np.array(embeddings_features))
         colors = ['blue', 'orange']
         labels = ['Правда', 'Фейк']
@@ -222,12 +213,16 @@ class ModelManager:
 
         accuracy = round(accuracy_score(y_true, y_pred_xgb_binary),2)
         precision = round(precision_score(y_true, y_pred_xgb_binary),2)
-        loss = round(log_loss(y_true, y_pred_xgb_binary),2)
+        loss = round(log_loss(y_true, y_pred_xgb),2)
+        recall = round(recall_score(y_true, y_pred_xgb_binary), 2)
+        f1 = round(f1_score(y_true, y_pred_xgb_binary), 2)
 
         scores = {
             "accuracy": accuracy,
             "precision": precision,
-            "log_loss": loss
+            "log_loss": loss,
+            "recall": recall,
+            "f1": f1
         }
         plots = {
             "precision_recall": precision_recall,

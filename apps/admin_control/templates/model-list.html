@@ -4,7 +4,7 @@
 {% block content %}
     {% if model_list %}
     <h1 class="mt-2">Моделі</h1>
-    <table class="mt-4 table table-bordered w-50 mx-auto">
+    <table class="mt-4 table table-bordered table-light w-50 mx-auto">
         <thead>
             <th>Назва</th>
             <th>Час створення</th>
@@ -28,5 +28,5 @@
     {% else %}
     <p>Жодних моделей ще не створено</p>
     {% endif %}
-    <a class="btn btn-success" href="{% url "model-create" %}">Створити Модель</a>
+    <a class="btn btn-success mb-3" href="{% url "model-create" %}">Створити Модель</a>
 {% endblock content %}

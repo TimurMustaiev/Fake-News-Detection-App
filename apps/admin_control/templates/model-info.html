@@ -2,14 +2,16 @@
 {% load i18n %}
 {% block title %}Сторінка моделі{% endblock title %}
 {% block content %}
-    <h1 class="mt-2 mb-0">{{model.name}}</h1>
-    <a href="{% url 'model-delete' model.model_id %}" class="btn btn-danger mb-2" 
-            onclick="return confirm('Ви впевнені, що хочете видалити цю модель?');">
-            Видалити
-    </a>
+    <h1 class="mt-2 mb-2 ps-5">
+        {{model.name}}
+        <a href="{% url 'model-delete' model.model_id %}" class="btn btn-danger" 
+        onclick="return confirm('Ви впевнені, що хочете видалити цю модель?');">
+            <i class="fas fa-trash-alt"></i>
+        </a>
+    </h1>
     <p>{{model.created_at}}</p>
     <h3>Ознаки:</h3>
-    <table class="table table-bordered w-50 mx-auto">
+    <table class="table table-bordered table-light w-50 mx-auto">
         <thead>
             <th>Назва</th>
             <th>Опис</th>
@@ -22,7 +24,7 @@
                     <td>{{feature_in_model.feature.description}}</td>
                     <td>
                         <a href="{% url "feature-update" model.model_id feature_in_model.feature_id %}" class="btn btn-primary">
-                            Редагувати
+                            <i class="fas fa-pencil-alt"></i>
                         </a>
                     </td>
                 </tr>
@@ -30,7 +32,7 @@
         </tbody>
     </table>
     <h3>Параметри:</h3>
-    <table class="table table-bordered w-50 mx-auto">
+    <table class="table table-bordered table-light w-50 mx-auto">
         <thead>
             <th>Назва</th>
             <th>Значення</th>
@@ -45,7 +47,7 @@
                     <td>{{parameter_in_model.parameter.description}}</td>
                     <td>
                         <a href="{% url "parameter-update" model.model_id parameter_in_model.parameter_id %}" class="btn btn-primary">
-                            Редагувати
+                            <i class="fas fa-pencil-alt"></i>
                         </a>
                     </td>
                 </tr>

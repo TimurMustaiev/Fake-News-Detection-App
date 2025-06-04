@@ -12,7 +12,7 @@ class Model(models.Model):
         parameters = self.parameterinmodel_set.all().select_related("parameter")
 
         feature_names = [f.feature.name for f in features]
-        parameter_names = [f"{p.parameter.name}={p.value} - {p.parameter.description}" for p in parameters]
+        parameter_names = [f"{p.parameter.name}={p.value}" for p in parameters]
 
         return f'Модель "{self.name}" | Ознаки: {", ".join(feature_names)} | Параметри: {", ".join(parameter_names)}'
 

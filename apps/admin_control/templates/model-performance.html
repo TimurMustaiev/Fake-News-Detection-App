@@ -3,16 +3,20 @@
 {% block title %}Інформація про роботу моделі{% endblock title %}
 {% block content %}
     <h1 class="mt-2">Метрики</h1>
-    <table class="table table-bordered w-50 mx-auto">
+    <table class="table table-bordered table-light w-50 mx-auto">
         <thead>
             <th>Accuracy</th>
             <th>Precision</th>
+            <th>Recall</th>
+            <th>F1</th>
             <th>Log Loss</th>
         </thead>
         <tbody>
             <tr>
                 <td>{{accuracy_score}}</td>
                 <td>{{precision_score}}</td>
+                <td>{{recall_score}}</td>
+                <td>{{f1_score}}</td>
                 <td>{{log_loss_score}}</td>
             </tr>
         </tbody>
